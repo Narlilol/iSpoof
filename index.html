@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iSpoof | Create Funny iMessage Screenshots</title>
+    <title>iSpoof | Create Fake iMessage Screenshots</title>
 
-    <meta name="description" content="iMessage Spoofer - Create realistic Funny iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
+    <meta name="description" content="iMessage Spoofer - Create realistic fake iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="shortcut icon" href="favicon.svg">
 
-    <meta property="og:title" content="iSpoof | Create Funny iMessage Screenshots">
-    <meta property="og:description" content="iMessage Spoofer is a web application that lets you create realistic Funny iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
+    <meta property="og:title" content="iSpoof | Create Fake iMessage Screenshots">
+    <meta property="og:description" content="iMessage Spoofer is a web application that lets you create realistic fake iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
     <meta property="og:image" content="https://i.ibb.co/DPQLDM4J/og-img.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -19,8 +19,8 @@
     <meta property="og:url" content="https://saganaki22.github.io/iSpoof/">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="iSpoof | Create Funny iMessage Screenshots">
-    <meta name="twitter:description" content="iMessage Spoofer is a web application that lets you create realistic Funny iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
+    <meta name="twitter:title" content="iSpoof | Create Fake iMessage Screenshots">
+    <meta name="twitter:description" content="iMessage Spoofer is a web application that lets you create realistic fake iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
     <meta name="twitter:image" content="https://i.ibb.co/DPQLDM4J/og-img.jpg">
 
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -263,8 +263,12 @@
         /* Mobile responsiveness */
         @media (max-width: 480px) {
             .iphone-frame {
-                transform: scale(0.85);
-                margin: -40px auto;
+                width: 100vw !important;
+                max-width: 375px !important;
+                height: auto !important;
+                transform: none !important;
+                margin: 0 auto !important;
+                overflow: visible !important;
             }
             
             .camera-container {
@@ -284,10 +288,12 @@
             }
             
             .dropdown-menu {
-                min-width: 200px;
-                left: 50%;
-                transform: translateX(-50%);
-                margin-bottom: 15px;
+                position: fixed !important;
+                left: 50% !important;
+                bottom: 80px !important;
+                transform: translateX(-50%) !important;
+                z-index: 99999 !important;
+                min-width: 200px !important;
             }
         }
 
@@ -341,6 +347,24 @@
             .dropdown-menu {
                 max-width: calc(100vw - 40px);
             }
+        }
+
+        /* 4. Message bubble overflow fix */
+        .message-bubble {
+            max-width: 255px;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.35;
+            font-size: 17px;
+            padding: 8px 14px;
+            overflow: hidden;
+        }
+        .message-bubble img {
+            max-width: 100%;
+            max-height: 192px;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
         }
     </style>
 </head>
@@ -766,7 +790,7 @@
                     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
                         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
                             <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
-                                iSpoof
+                                iPhone iMessage Spoofer
                             </h1>
                             
                             <div className="space-y-6">
@@ -959,34 +983,11 @@
                                 </div>
 
                                 {/* iMessage Label */}
-                                <div className="text-center py-2 bg-white">
-                                    <span className="text-gray-500 text-sm">iMessage</span>
-                                    <div className="text-gray-500 text-xs">
-                                        Today{' '}
-                                        {editingTime ? (
-                                            <input
-                                                type="text"
-                                                value={tempTime}
-                                                onChange={(e) => setTempTime(e.target.value)}
-                                                onBlur={saveTimeEdit}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') saveTimeEdit();
-                                                    if (e.key === 'Escape') cancelTimeEdit();
-                                                }}
-                                                className="bg-transparent border-none outline-none text-center"
-                                                placeholder="00:00"
-                                                autoFocus
-                                                style={{ width: '40px' }}
-                                            />
-                                        ) : (
-                                            <span 
-                                                className="time-editable cursor-pointer"
-                                                onClick={startTimeEditing}
-                                                title="Click to edit time"
-                                            >
-                                                {getCurrentTime()}
-                                            </span>
-                                        )}
+                                <div style={{ textAlign: 'center', paddingTop: '2px', paddingBottom: '2px', background: 'white' }}>
+                                    <div style={{ color: '#8E8E93', fontSize: '13px', fontWeight: '400', lineHeight: '16px' }}>iMessage</div>
+                                    <div style={{ color: '#8E8E93', fontSize: '13px', fontWeight: '400', lineHeight: '16px', display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
+                                        <span>Today</span>
+                                        <span>{getCurrentTime()}</span>
                                     </div>
                                 </div>
 
@@ -1386,21 +1387,11 @@
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
-                                <div style={{
-                                    color: '#8E8E93', 
-                                    fontSize: '13px', 
-                                    fontWeight: '400',
-                                    lineHeight: '16px',
-                                    textAlign: 'center'
-                                }}>iMessage</div>
-                                <div style={{
-                                    color: '#8E8E93', 
-                                    fontSize: '13px', 
-                                    fontWeight: '400',
-                                    lineHeight: '16px',
-                                    textAlign: 'center',
-                                    marginTop: '1px'
-                                }}>Today {getCurrentTime()}</div>
+                                <div style={{ color: '#8E8E93', fontSize: '13px', fontWeight: '400', lineHeight: '16px' }}>iMessage</div>
+                                <div style={{ color: '#8E8E93', fontSize: '13px', fontWeight: '400', lineHeight: '16px', display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '1px' }}>
+                                    <span>Today</span>
+                                    <span>{getCurrentTime()}</span>
+                                </div>
                             </div>
 
                             {/* Content Container - Messages + Input */}
