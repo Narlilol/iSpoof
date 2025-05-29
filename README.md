@@ -10,6 +10,12 @@
 
 A fun web application that lets you create realistic iMessage screenshots with customizable contacts, messages, and timestamps. Perfect for creating humorous conversations with friends!
 
+<div align="center">
+
+| Downloaded IMG | Screenshot |
+|:---:|:---:|
+| ![Saganaki22_imessage (2)](https://github.com/user-attachments/assets/043c3422-e0e4-46b8-b89a-189498eea70d) | ![image](https://github.com/user-attachments/assets/e54dc67d-a844-404c-917f-7e0cdf8921ee) |
+
 </div>
 
 ## ⚠️ Important Disclaimer
