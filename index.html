@@ -41,6 +41,9 @@
             line-height: 1.35;
             font-size: 17px;
             padding: 8px 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre-wrap;
         }
         
         .user-bubble {
@@ -92,7 +95,7 @@
             object-fit: cover;
         }
         
-        .-frame {
+        .iphone-frame {
             background: #000;
             border-radius: 50px;
             padding: 8px;
@@ -262,7 +265,7 @@
 
         /* Mobile responsiveness */
         @media (max-width: 480px) {
-            .-frame {
+            .iphone-frame {
                 width: 100vw !important;
                 max-width: 375px !important;
                 height: auto !important;
@@ -298,7 +301,7 @@
         }
 
         @media (max-width: 400px) {
-            .-frame {
+            .iphone-frame {
                 transform: scale(0.75);
                 margin: -60px auto;
             }
@@ -366,6 +369,11 @@
             border-radius: 12px;
             display: block;
         }
+
+        /* Add this to your CSS for the delete animation */
+        .opacity-0 { opacity: 0 !important; }
+        .transition-opacity { transition: opacity 0.3s; }
+        .duration-300 { transition-duration: 300ms; }
     </style>
 </head>
 <body>
@@ -390,6 +398,8 @@
             const [showCameraModal, setShowCameraModal] = useState(false);
             const [cameraStream, setCameraStream] = useState(null);
             const [cameraError, setCameraError] = useState('');
+            const [deletingMessages, setDeletingMessages] = useState([]);
+            const longPressTimeouts = useRef({});
             
             const downloadRef = useRef(null);
             const messagesEndRef = useRef(null);
@@ -787,12 +797,11 @@
 
             if (screen === 'setup') {
                 return (
-                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4">
                         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
                             <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
                                 💬 iSpoof
                             </h1>
-                            
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -891,6 +900,13 @@
                                     GitHub
                                 </a>
                             </div>
+                        </div>
+                        {/* Disclaimer as footer, outside the card */}
+                        <div className="w-full flex justify-center mt-8">
+                            <p className="text-xs text-gray-500 text-center" style={{ maxWidth: '320px' }}>
+                                This tool is intended for memes, parodies, and jokes only.<br />
+                                <strong>Strictly no malicious or harmful usage will be tolerated.</strong>
+                            </p>
                         </div>
                     </div>
                 );
@@ -993,19 +1009,39 @@
 
                                 <div className="flex-1 overflow-y-auto px-4 py-2 bg-white space-y-3">
                                     {messages.map((message, index) => {
-                                        // Find the index of the last user message (blue bubble)
                                         const lastUserMessageIndex = messages.map((msg, idx) => msg.isUser ? idx : -1)
                                             .filter(idx => idx !== -1)
                                             .pop();
-                                        
+                                        const isDeleting = deletingMessages.includes(message.id);
+                                        let longPressFired = false;
+                                        const handleTouchStart = () => {
+                                            longPressFired = false;
+                                            longPressTimeouts.current[message.id] = setTimeout(() => {
+                                                longPressFired = true;
+                                                setDeletingMessages((prev) => [...prev, message.id]);
+                                                setTimeout(() => deleteMessage(index), 300); // 300ms for animation
+                                            }, 3000);
+                                        };
+                                        const handleTouchEnd = () => {
+                                            clearTimeout(longPressTimeouts.current[message.id]);
+                                            if (!longPressFired) {
+                                                startEditing(index, message.text);
+                                            }
+                                        };
                                         return (
-                                            <div key={message.id} className="fade-in">
+                                            <div key={message.id} className={`fade-in${isDeleting ? ' opacity-0 transition-opacity duration-300' : ''}`}
+                                                onClick={() => {
+                                                    if (!('ontouchstart' in window)) startEditing(index, message.text);
+                                                }}
+                                                onTouchStart={handleTouchStart}
+                                                onTouchEnd={handleTouchEnd}
+                                                onTouchCancel={handleTouchEnd}
+                                            >
                                                 <div className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} mb-1`}>
                                                     <div
                                                         className={`message-bubble cursor-pointer group relative ${
                                                             message.isUser ? 'user-bubble' : 'contact-bubble'
                                                         }`}
-                                                        onClick={() => message.type === 'text' && startEditing(index, message.text)}
                                                         style={{ cursor: message.type === 'text' ? 'pointer' : 'default' }}
                                                     >
                                                         {editingIndex === index && message.type === 'text' ? (
@@ -1044,21 +1080,14 @@
                                                         ) : (
                                                             <span style={{ 
                                                                 display: 'block',
-                                                                padding: message.type === 'text' ? '2px 0' : '0'
+                                                                width: '100%',
+                                                                textAlign: 'left',
+                                                                wordBreak: 'break-word',
+                                                                whiteSpace: 'pre-wrap'
                                                             }}>
                                                                 {message.text}
                                                             </span>
                                                         )}
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                deleteMessage(index);
-                                                            }}
-                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                                                            style={{ zIndex: 10 }}
-                                                        >
-                                                            ×
-                                                        </button>
                                                     </div>
                                                 </div>
                                                 {message.isUser && message.status && index === lastUserMessageIndex && (
@@ -1455,7 +1484,9 @@
                                                         <span style={{
                                                             display: 'block',
                                                             width: '100%',
-                                                            textAlign: 'left'
+                                                            textAlign: 'left',
+                                                            wordBreak: 'break-word',
+                                                            whiteSpace: 'pre-wrap'
                                                         }}>
                                                             {message.text}
                                                         </span>
