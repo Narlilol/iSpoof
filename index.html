@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iSpoof | Create Fake iMessage Screenshots</title>
+
+    <meta name="description" content="iMessage Spoofer - Create realistic fake iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
+
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="shortcut icon" href="favicon.svg">
+
+    <meta property="og:title" content="iSpoof | Create Fake iMessage Screenshots">
+    <meta property="og:description" content="iMessage Spoofer is a web application that lets you create realistic fake iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
+    <meta property="og:image" content="https://i.ibb.co/DPQLDM4J/og-img.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://saganaki22.github.io/iSpoof/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="iSpoof | Create Fake iMessage Screenshots">
+    <meta name="twitter:description" content="iMessage Spoofer is a web application that lets you create realistic fake iMessage screenshots with customizable contacts, messages, and timestamps to laugh with your friends.">
+    <meta name="twitter:image" content="https://i.ibb.co/DPQLDM4J/og-img.jpg">
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&display=swap');
+        
+        * {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+        }
+        
+        .message-bubble {
+            max-width: 255px;
+            word-wrap: break-word;
+            line-height: 1.35;
+            font-size: 17px;
+            padding: 8px 14px;
+        }
+        
+        .user-bubble {
+            background: #007AFF;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+        
+        .contact-bubble {
+            background: #E5E5EA;
+            color: #000000;
+            border-radius: 18px 18px 18px 4px;
+        }
+        
+        .message-status {
+            font-size: 13px;
+            color: #8E8E93;
+            margin-top: 2px;
+            text-align: right;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .contact-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .contact-photo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .iphone-frame {
+            background: #000;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .dynamic-island {
+            width: 126px;
+            height: 37px;
+            background: #000;
+            border-radius: 19px;
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        
+        .hidden-input {
+            display: none;
+        }
+
+        /* DOWNLOAD ONLY - Hidden from view */
+        .download-only {
+            position: fixed;
+            left: -9999px;
+            top: -9999px;
+            width: 375px;
+            background: white;
+            z-index: -1;
+            visibility: hidden;
+        }
+
+        .time-editable {
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .time-editable:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Camera Modal Styles */
+        .camera-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .camera-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .camera-video {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            background: #000;
+            display: block;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .camera-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 100px;
+        }
+
+        .camera-btn.primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        .camera-btn.primary:hover {
+            background: #0056b3;
+        }
+
+        .camera-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .camera-btn.secondary:hover {
+            background: #545b62;
+        }
+
+        /* Dropdown improvements */
+        .dropdown-container {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            min-width: 180px;
+            z-index: 100;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-item:not(:last-child) {
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .dropdown-icon {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .iphone-frame {
+                transform: scale(0.85);
+                margin: -40px auto;
+            }
+            
+            .camera-container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .camera-controls {
+                gap: 10px;
+            }
+            
+            .camera-btn {
+                padding: 12px 20px;
+                font-size: 16px;
+                min-width: 100px;
+                touch-action: manipulation; /* Prevent double-tap zoom */
+            }
+            
+            .dropdown-menu {
+                min-width: 200px;
+                left: 50%;
+                transform: translateX(-50%);
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .iphone-frame {
+                transform: scale(0.75);
+                margin: -60px auto;
+            }
+        }
+
+        /* Enhanced touch device support */
+        @media (hover: none) and (pointer: coarse) {
+            .dropdown-item:hover {
+                background-color: transparent;
+            }
+            
+            .dropdown-item:active {
+                background-color: #f8f9fa;
+            }
+            
+            /* Make all buttons more touch-friendly */
+            button, .contact-photo, .time-editable, .message-bubble {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+            }
+            
+            /* Larger touch targets */
+            .dropdown-item {
+                padding: 16px;
+                font-size: 16px;
+            }
+            
+            /* Prevent text selection on touch */
+            .camera-btn, .dropdown-item, button {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+            }
+        }
+
+        /* Additional mobile improvements */
+        @media (max-width: 768px) {
+            /* Better button spacing on tablets */
+            .camera-controls {
+                flex-direction: row;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            /* Ensure dropdown doesn't go off screen */
+            .dropdown-menu {
+                max-width: calc(100vw - 40px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        const MessagingApp = () => {
+            const [screen, setScreen] = useState('setup');
+            const [contactName, setContactName] = useState('');
+            const [contactPhoto, setContactPhoto] = useState(null);
+            const [flowDirection, setFlowDirection] = useState('received');
+            const [messages, setMessages] = useState([]);
+            const [newMessage, setNewMessage] = useState('');
+            const [editingIndex, setEditingIndex] = useState(-1);
+            const [editingText, setEditingText] = useState('');
+            const [customTime, setCustomTime] = useState('');
+            const [editingTime, setEditingTime] = useState(false);
+            const [tempTime, setTempTime] = useState('');
+            const [showCameraDropdown, setShowCameraDropdown] = useState(false);
+            const [showCameraModal, setShowCameraModal] = useState(false);
+            const [cameraStream, setCameraStream] = useState(null);
+            const [cameraError, setCameraError] = useState('');
+            
+            const downloadRef = useRef(null);
+            const messagesEndRef = useRef(null);
+            const photoInputRef = useRef(null);
+            const messagePhotoInputRef = useRef(null);
+            const videoRef = useRef(null);
+            const canvasRef = useRef(null);
+            const dropdownRef = useRef(null);
+
+            const scrollToBottom = () => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            useEffect(() => {
+                scrollToBottom();
+            }, [messages]);
+
+            // Click/Touch outside handler for dropdown
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setShowCameraDropdown(false);
+                    }
+                };
+
+                const handleTouchOutside = (event) => {
+                    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                        setShowCameraDropdown(false);
+                    }
+                };
+
+                // Add both mouse and touch event listeners
+                document.addEventListener('mousedown', handleClickOutside);
+                document.addEventListener('touchstart', handleTouchOutside, { passive: true });
+                
+                // Also close dropdown when scrolling (mobile behavior)
+                document.addEventListener('scroll', () => setShowCameraDropdown(false), { passive: true });
+                
+                return () => {
+                    document.removeEventListener('mousedown', handleClickOutside);
+                    document.removeEventListener('touchstart', handleTouchOutside);
+                    document.removeEventListener('scroll', () => setShowCameraDropdown(false));
+                };
+            }, []);
+
+            // Cleanup camera stream on unmount
+            useEffect(() => {
+                return () => {
+                    if (cameraStream) {
+                        cameraStream.getTracks().forEach(track => track.stop());
+                    }
+                };
+            }, [cameraStream]);
+
+            const handlePhotoUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please select a valid image file.');
+                        return;
+                    }
+                    
+                    // Validate file size (max 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('Image file is too large. Please select a file smaller than 10MB.');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        setContactPhoto(e.target.result);
+                    };
+                    reader.onerror = () => {
+                        alert('Error reading the image file. Please try again.');
+                    };
+                    reader.readAsDataURL(file);
+                }
+                // Reset input
+                event.target.value = '';
+            };
+
+            const handleMessagePhotoUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please select a valid image file.');
+                        return;
+                    }
+                    
+                    // Validate file size (max 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('Image file is too large. Please select a file smaller than 10MB.');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        addImageMessage(e.target.result);
+                        setShowCameraDropdown(false);
+                    };
+                    reader.onerror = () => {
+                        alert('Error reading the image file. Please try again.');
+                    };
+                    reader.readAsDataURL(file);
+                }
+                // Reset input
+                event.target.value = '';
+            };
+
+            const triggerPhotoUpload = () => {
+                photoInputRef.current?.click();
+            };
+
+            const triggerMessagePhotoUpload = () => {
+                messagePhotoInputRef.current?.click();
+            };
+
+            const startCamera = async () => {
+                setShowCameraDropdown(false);
+                setCameraError('');
+                
+                try {
+                    // Check if browser supports camera
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('Camera not supported on this browser');
+                    }
+
+                    // Try different camera constraints for better compatibility
+                    const constraints = {
+                        video: {
+                            facingMode: 'environment', // Try back camera first
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    };
+
+                    let stream;
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    } catch (err) {
+                        // Fallback to any available camera
+                        console.log('Back camera not available, trying front camera');
+                        stream = await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                facingMode: 'user',
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 }
+                            }
+                        });
+                    }
+
+                    setCameraStream(stream);
+                    setShowCameraModal(true);
+                    
+                    // Wait for modal to be rendered before setting video
+                    setTimeout(() => {
+                        if (videoRef.current && stream) {
+                            videoRef.current.srcObject = stream;
+                            videoRef.current.play().catch(err => {
+                                console.error('Error playing video:', err);
+                                setCameraError('Error starting camera preview');
+                            });
+                        }
+                    }, 100);
+                    
+                } catch (err) {
+                    console.error('Error accessing camera:', err);
+                    let errorMessage = 'Unable to access camera. ';
+                    
+                    if (err.name === 'NotAllowedError') {
+                        errorMessage += 'Please allow camera permissions and try again.';
+                    } else if (err.name === 'NotFoundError') {
+                        errorMessage += 'No camera found on this device.';
+                    } else if (err.name === 'NotSupportedError') {
+                        errorMessage += 'Camera not supported on this browser.';
+                    } else {
+                        errorMessage += 'Please check your camera settings and try again.';
+                    }
+                    
+                    setCameraError(errorMessage);
+                    alert(errorMessage);
+                }
+            };
+
+            const capturePhoto = () => {
+                if (videoRef.current && canvasRef.current && cameraStream) {
+                    const canvas = canvasRef.current;
+                    const video = videoRef.current;
+                    
+                    // Set canvas dimensions to match video
+                    canvas.width = video.videoWidth || video.clientWidth;
+                    canvas.height = video.videoHeight || video.clientHeight;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // Convert to blob and add as message
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                addImageMessage(e.target.result);
+                                stopCamera();
+                            };
+                            reader.onerror = () => {
+                                alert('Error processing the captured image. Please try again.');
+                            };
+                            reader.readAsDataURL(blob);
+                        } else {
+                            alert('Error capturing image. Please try again.');
+                        }
+                    }, 'image/jpeg', 0.8);
+                } else {
+                    alert('Camera not ready. Please try again.');
+                }
+            };
+
+            const stopCamera = () => {
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    setCameraStream(null);
+                }
+                setShowCameraModal(false);
+                setCameraError('');
+            };
+
+            const startMessaging = () => {
+                if (!contactName.trim()) return;
+                setScreen('messaging');
+                
+                const initialMessage = {
+                    id: Date.now(),
+                    text: flowDirection === 'received' ? 'Hey there!' : 'Hello!',
+                    isUser: flowDirection === 'sent',
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: flowDirection === 'sent' ? 'delivered' : null,
+                    type: 'text'
+                };
+                setMessages([initialMessage]);
+            };
+
+            const addMessage = () => {
+                if (!newMessage.trim()) return;
+                
+                const lastMessage = messages[messages.length - 1];
+                const isUserTurn = !lastMessage?.isUser;
+                
+                const message = {
+                    id: Date.now(),
+                    text: newMessage,
+                    isUser: isUserTurn,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: isUserTurn ? 'delivered' : null,
+                    type: 'text'
+                };
+                
+                setMessages([...messages, message]);
+                setNewMessage('');
+                
+                if (isUserTurn) {
+                    setTimeout(() => {
+                        setMessages(prev => prev.map((msg, index) => 
+                            msg.id === message.id ? { ...msg, status: 'read' } : 
+                            (msg.isUser && index === prev.length - 2) ? { ...msg, status: 'delivered' } : msg
+                        ));
+                    }, 1500);
+                }
+            };
+
+            const addImageMessage = (imageUrl) => {
+                const lastMessage = messages[messages.length - 1];
+                const isUserTurn = !lastMessage?.isUser;
+                
+                const message = {
+                    id: Date.now(),
+                    imageUrl: imageUrl,
+                    isUser: isUserTurn,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: isUserTurn ? 'delivered' : null,
+                    type: 'image'
+                };
+                
+                setMessages([...messages, message]);
+                
+                if (isUserTurn) {
+                    setTimeout(() => {
+                        setMessages(prev => prev.map((msg, index) => 
+                            msg.id === message.id ? { ...msg, status: 'read' } : 
+                            (msg.isUser && index === prev.length - 2) ? { ...msg, status: 'delivered' } : msg
+                        ));
+                    }, 1500);
+                }
+            };
+
+            const startEditing = (index, text) => {
+                setEditingIndex(index);
+                setEditingText(text);
+            };
+
+            const saveEdit = () => {
+                if (editingText.trim()) {
+                    setMessages(prev => prev.map((msg, idx) => 
+                        idx === editingIndex ? { ...msg, text: editingText.trim() } : msg
+                    ));
+                }
+                setEditingIndex(-1);
+                setEditingText('');
+            };
+
+            const deleteMessage = (index) => {
+                setMessages(prev => prev.filter((_, idx) => idx !== index));
+            };
+
+            const downloadImage = async () => {
+                const element = downloadRef.current;
+                if (!element) return;
+
+                try {
+                    // Temporarily make the element visible for capture
+                    element.style.position = 'absolute';
+                    element.style.left = '0px';
+                    element.style.top = '0px';
+                    element.style.visibility = 'visible';
+                    element.style.zIndex = '9999';
+                    
+                    // Wait for content to fully render
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // Get the actual height of the content
+                    const actualHeight = element.scrollHeight;
+                    
+                    const canvas = await html2canvas(element, {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        allowTaint: true,
+                        width: 375,
+                        height: actualHeight,
+                        scrollX: 0,
+                        scrollY: 0,
+                        windowWidth: 375,
+                        windowHeight: actualHeight,
+                        foreignObjectRendering: true
+                    });
+                    
+                    // Hide the element again
+                    element.style.position = 'fixed';
+                    element.style.left = '-9999px';
+                    element.style.top = '-9999px';
+                    element.style.visibility = 'hidden';
+                    element.style.zIndex = '-1';
+                    
+                    const link = document.createElement('a');
+                    link.download = `${contactName}_imessage.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                } catch (error) {
+                    console.error('Error generating image:', error);
+                    
+                    // Ensure element is hidden again even if there's an error
+                    element.style.position = 'fixed';
+                    element.style.left = '-9999px';
+                    element.style.top = '-9999px';
+                    element.style.visibility = 'hidden';
+                    element.style.zIndex = '-1';
+                    
+                    alert('Error generating image. Please try again.');
+                }
+            };
+
+            const getCurrentTime = () => {
+                return customTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            };
+
+            const startTimeEditing = () => {
+                setEditingTime(true);
+                setTempTime(customTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            };
+
+            const saveTimeEdit = () => {
+                if (tempTime.trim()) {
+                    setCustomTime(tempTime.trim());
+                }
+                setEditingTime(false);
+                setTempTime('');
+            };
+
+            const cancelTimeEdit = () => {
+                setEditingTime(false);
+                setTempTime('');
+            };
+
+            if (screen === 'setup') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+                            <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+                                iPhone iMessage Spoofer
+                            </h1>
+                            
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Contact Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={contactName}
+                                        onChange={(e) => setContactName(e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter contact name..."
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Contact Photo (Optional)
+                                    </label>
+                                    <div className="flex items-center space-x-4">
+                                        <div 
+                                            className="contact-photo w-16 h-16 cursor-pointer border-2 border-dashed border-gray-300 hover:border-blue-500"
+                                            onClick={triggerPhotoUpload}
+                                        >
+                                            {contactPhoto ? (
+                                                <img src={contactPhoto} alt="Contact" />
+                                            ) : (
+                                                <span className="text-2xl">📷</span>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <button
+                                                onClick={triggerPhotoUpload}
+                                                className="text-blue-600 hover:text-blue-800 text-sm"
+                                            >
+                                                {contactPhoto ? 'Change Photo' : 'Upload Photo'}
+                                            </button>
+                                            {contactPhoto && (
+                                                <button
+                                                    onClick={() => setContactPhoto(null)}
+                                                    className="block text-red-600 hover:text-red-800 text-sm mt-1"
+                                                >
+                                                    Remove Photo
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <input
+                                        ref={photoInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handlePhotoUpload}
+                                        className="hidden-input"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Message Flow
+                                    </label>
+                                    <div className="space-y-2">
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                value="received"
+                                                checked={flowDirection === 'received'}
+                                                onChange={(e) => setFlowDirection(e.target.value)}
+                                                className="mr-3"
+                                            />
+                                            Start with message received from contact
+                                        </label>
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                value="sent"
+                                                checked={flowDirection === 'sent'}
+                                                onChange={(e) => setFlowDirection(e.target.value)}
+                                                className="mr-3"
+                                            />
+                                            Start with message sent to contact
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={startMessaging}
+                                    disabled={!contactName.trim()}
+                                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    Start iMessage
+                                </button>
+                            </div>
+
+                            {/* GitHub Link below Setup Menu */}
+                            <div className="mt-4 text-center">
+                                <a href="https://github.com/Saganaki22/iSpoof" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                                    GitHub
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+                    <div className="w-full max-w-sm mx-auto">
+                        {/* iPhone Frame - VISIBLE ONLY */}
+                        <div className="iphone-frame">
+                            <div className="bg-white flex flex-col overflow-hidden relative" style={{borderRadius: '42px', width: '375px', height: '812px'}}>
+                                {/* Dynamic Island */}
+                                <div className="dynamic-island" style={{top: '11px'}}></div>
+                                
+                                {/* Status Bar */}
+                                <div className="flex justify-between items-center px-5 py-2 bg-white" style={{paddingTop: '12px', height: '44px'}}>
+                                    {editingTime ? (
+                                        <input
+                                            type="text"
+                                            value={tempTime}
+                                            onChange={(e) => setTempTime(e.target.value)}
+                                            onBlur={saveTimeEdit}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') saveTimeEdit();
+                                                if (e.key === 'Escape') cancelTimeEdit();
+                                            }}
+                                            className="text-lg font-semibold bg-transparent border-none outline-none"
+                                            placeholder="00:00"
+                                            autoFocus
+                                            style={{ width: '60px' }}
+                                        />
+                                    ) : (
+                                        <span 
+                                            className="text-lg font-semibold time-editable"
+                                            onClick={startTimeEditing}
+                                            title="Click to edit time"
+                                        >
+                                            {getCurrentTime()}
+                                        </span>
+                                    )}
+                                    <div className="flex items-center space-x-2">
+                                        {/* Phone Signal - Fixed direction */}
+                                        <div className="flex space-x-1 items-end">
+                                            <div className="w-1 h-2 bg-black rounded-full"></div>
+                                            <div className="w-1 h-3 bg-black rounded-full"></div>
+                                            <div className="w-1 h-4 bg-black rounded-full"></div>
+                                            <div className="w-1 h-5 bg-black rounded-full"></div>
+                                        </div>
+                                        {/* WiFi - Fixed to look like iPhone */}
+                                        <svg width="15" height="12" viewBox="0 0 15 12" fill="none">
+                                            <path d="M7.5 0C3.5 0 0 3 0 6.5L1.5 8C1.5 4.5 4.5 2 7.5 2C10.5 2 13.5 4.5 13.5 8L15 6.5C15 3 11.5 0 7.5 0Z" fill="black"/>
+                                            <path d="M7.5 3C5.5 3 3.5 4.5 3.5 7L4.5 8C4.5 6 6 4.5 7.5 4.5C9 4.5 10.5 6 10.5 8L11.5 7C11.5 4.5 9.5 3 7.5 3Z" fill="black"/>
+                                            <path d="M7.5 6C6.5 6 5.5 6.5 5.5 8L6.5 9C6.5 7.5 7 7 7.5 7C8 7 8.5 7.5 8.5 9L9.5 8C9.5 6.5 8.5 6 7.5 6Z" fill="black"/>
+                                            <circle cx="7.5" cy="10" r="1.5" fill="black"/>
+                                        </svg>
+                                        {/* Battery */}
+                                        <svg width="25" height="12" viewBox="0 0 25 12">
+                                            <rect x="1" y="1" width="21" height="10" rx="3" fill="black"/>
+                                            <rect x="23" y="4" width="1" height="4" rx="0.5" fill="black"/>
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                {/* Header */}
+                                <div className="bg-white px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                                    <button className="text-blue-500 text-lg">
+                                        <svg width="20" height="20" viewBox="0 0 1024 1024" fill="#007AFF" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="#007AFF" strokeWidth="23.552">
+                                            <path d="M669.6 849.6c8.8 8 22.4 7.2 30.4-1.6s7.2-22.4-1.6-30.4l-309.6-280c-8-7.2-8-17.6 0-24.8l309.6-270.4c8.8-8 9.6-21.6 2.4-30.4-8-8.8-21.6-9.6-30.4-2.4L360.8 480.8c-27.2 24-28 64-0.8 88.8l309.6 280z"/>
+                                        </svg>
+                                    </button>
+                                    <div className="flex flex-col items-center">
+                                        <div 
+                                            className="contact-photo mb-1"
+                                            onClick={triggerPhotoUpload}
+                                        >
+                                            {contactPhoto ? (
+                                                <img src={contactPhoto} alt="Contact" />
+                                            ) : (
+                                                contactName.charAt(0).toUpperCase()
+                                            )}
+                                        </div>
+                                        <h3 className="font-medium text-black text-lg">{contactName}</h3>
+                                    </div>
+                                    <button className="text-blue-500 text-2xl">
+                                        <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="#007AFF" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="24" y="64" width="176" height="128" rx="8"/>
+                                            <polyline points="200 112 248 80 248 176 200 144"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* iMessage Label */}
+                                <div className="text-center py-2 bg-white">
+                                    <span className="text-gray-500 text-sm">iMessage</span>
+                                    <div className="text-gray-500 text-xs">
+                                        Today{' '}
+                                        {editingTime ? (
+                                            <input
+                                                type="text"
+                                                value={tempTime}
+                                                onChange={(e) => setTempTime(e.target.value)}
+                                                onBlur={saveTimeEdit}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') saveTimeEdit();
+                                                    if (e.key === 'Escape') cancelTimeEdit();
+                                                }}
+                                                className="bg-transparent border-none outline-none text-center"
+                                                placeholder="00:00"
+                                                autoFocus
+                                                style={{ width: '40px' }}
+                                            />
+                                        ) : (
+                                            <span 
+                                                className="time-editable cursor-pointer"
+                                                onClick={startTimeEditing}
+                                                title="Click to edit time"
+                                            >
+                                                {getCurrentTime()}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto px-4 py-2 bg-white space-y-3">
+                                    {messages.map((message, index) => {
+                                        // Find the index of the last user message (blue bubble)
+                                        const lastUserMessageIndex = messages.map((msg, idx) => msg.isUser ? idx : -1)
+                                            .filter(idx => idx !== -1)
+                                            .pop();
+                                        
+                                        return (
+                                            <div key={message.id} className="fade-in">
+                                                <div className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} mb-1`}>
+                                                    <div
+                                                        className={`message-bubble cursor-pointer group relative ${
+                                                            message.isUser ? 'user-bubble' : 'contact-bubble'
+                                                        }`}
+                                                        onClick={() => message.type === 'text' && startEditing(index, message.text)}
+                                                        style={{ cursor: message.type === 'text' ? 'pointer' : 'default' }}
+                                                    >
+                                                        {editingIndex === index && message.type === 'text' ? (
+                                                            <input
+                                                                type="text"
+                                                                value={editingText}
+                                                                onChange={(e) => setEditingText(e.target.value)}
+                                                                onBlur={saveEdit}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') saveEdit();
+                                                                    if (e.key === 'Escape') {
+                                                                        setEditingIndex(-1);
+                                                                        setEditingText('');
+                                                                    }
+                                                                }}
+                                                                className="bg-transparent border-none outline-none w-full text-white placeholder-white"
+                                                                style={{
+                                                                    background: 'transparent',
+                                                                    color: message.isUser ? 'white' : 'black',
+                                                                    fontSize: '17px',
+                                                                    lineHeight: '22px'
+                                                                }}
+                                                                autoFocus
+                                                            />
+                                                        ) : message.type === 'image' ? (
+                                                            <img 
+                                                                src={message.imageUrl} 
+                                                                alt="Message" 
+                                                                style={{
+                                                                    maxWidth: '200px',
+                                                                    maxHeight: '200px',
+                                                                    borderRadius: '12px',
+                                                                    display: 'block'
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <span style={{ 
+                                                                display: 'block',
+                                                                padding: message.type === 'text' ? '2px 0' : '0'
+                                                            }}>
+                                                                {message.text}
+                                                            </span>
+                                                        )}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                deleteMessage(index);
+                                                            }}
+                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                                            style={{ zIndex: 10 }}
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {message.isUser && message.status && index === lastUserMessageIndex && (
+                                                    <div className="flex justify-end">
+                                                        <div className="message-status">
+                                                            {message.status === 'delivered' ? 'Delivered' : 'Read'}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                    <div ref={messagesEndRef} />
+                                </div>
+
+                                {/* Input Area */}
+                                <div className="p-4 bg-white border-t border-gray-200">
+                                    <div className="flex items-center space-x-3">
+                                        {/* Camera Button - Separate Round Container */}
+                                        <div className="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center dropdown-container" ref={dropdownRef}>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setShowCameraDropdown(!showCameraDropdown);
+                                                }}
+                                                onTouchStart={(e) => {
+                                                    // Prevent double-tap zoom on mobile
+                                                    e.preventDefault();
+                                                }}
+                                                className="w-full h-full flex items-center justify-center"
+                                                type="button"
+                                                aria-label="Camera options"
+                                            >
+                                                <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="#8E8E93" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M208,208H48a16,16,0,0,1-16-16V80A16,16,0,0,1,48,64H80L96,40h64l16,24h32a16,16,0,0,1,16,16V192A16,16,0,0,1,208,208Z"/>
+                                                    <circle cx="128" cy="132" r="36"/>
+                                                </svg>
+                                            </button>
+                                            
+                                            {/* Improved Dropdown Menu */}
+                                            {showCameraDropdown && (
+                                                <div className="dropdown-menu">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            triggerMessagePhotoUpload();
+                                                        }}
+                                                        onTouchStart={(e) => e.preventDefault()}
+                                                        className="dropdown-item"
+                                                        type="button"
+                                                    >
+                                                        <svg className="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        Upload Image
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            startCamera();
+                                                        }}
+                                                        onTouchStart={(e) => e.preventDefault()}
+                                                        className="dropdown-item"
+                                                        type="button"
+                                                    >
+                                                        <svg className="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                        Take Photo
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {/* iMessage Input + Microphone - Same Container */}
+                                        <div className="flex-1 bg-gray-100 rounded-full px-4 py-2 flex items-center space-x-3">
+                                            <input
+                                                type="text"
+                                                value={newMessage}
+                                                onChange={(e) => setNewMessage(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && addMessage()}
+                                                placeholder="iMessage"
+                                                className="flex-1 bg-transparent outline-none text-base"
+                                            />
+                                            <button className="text-gray-500">
+                                                <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="#8E8E93" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="88" y="24" width="80" height="144" rx="40"/>
+                                                    <line x1="128" y1="200" x2="128" y2="240"/>
+                                                    <path d="M200,128a72,72,0,0,1-144,0"/>
+                                                </svg>
+                                            </button>
+                                            {newMessage.trim() && (
+                                                <button
+                                                    onClick={addMessage}
+                                                    className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg ml-2"
+                                                >
+                                                    ↑
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Controls */}
+                        <div className="mt-6 flex justify-center space-x-4">
+                            <button
+                                onClick={() => setScreen('setup')}
+                                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                Back to Setup
+                            </button>
+                            <button
+                                onClick={downloadImage}
+                                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                                Download Image
+                            </button>
+                        </div>
+
+                        {/* GitHub Link below Phone Controls */}
+                        <div className="mt-4 text-center">
+                            <a href="https://github.com/Saganaki22/iSpoof" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                                GitHub
+                            </a>
+                        </div>
+
+                        {/* Hidden File Inputs */}
+                        <input
+                            ref={photoInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoUpload}
+                            className="hidden-input"
+                        />
+                        <input
+                            ref={messagePhotoInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleMessagePhotoUpload}
+                            className="hidden-input"
+                        />
+
+                        {/* Camera Modal */}
+                        {showCameraModal && (
+                            <div className="camera-modal">
+                                <div className="camera-container">
+                                    <div className="mb-4">
+                                        <video 
+                                            ref={videoRef}
+                                            className="camera-video"
+                                            autoPlay
+                                            playsInline
+                                            muted
+                                        />
+                                        <canvas ref={canvasRef} className="hidden" />
+                                    </div>
+                                    
+                                    {cameraError && (
+                                        <div className="text-red-600 text-center mb-4 text-sm">
+                                            {cameraError}
+                                        </div>
+                                    )}
+                                    
+                                    <div className="camera-controls">
+                                        <button
+                                            onClick={capturePhoto}
+                                            className="camera-btn primary"
+                                        >
+                                            📸 Capture
+                                        </button>
+                                        <button
+                                            onClick={stopCamera}
+                                            className="camera-btn secondary"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* DOWNLOAD AREA - HIDDEN FROM VIEW, CLEAN FOR CAPTURE */}
+                    <div ref={downloadRef} className="download-only">
+                        <div 
+                            data-download-container
+                            style={{
+                                width: '375px', 
+                                minHeight: '812px',
+                                background: 'white', 
+                                fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                                position: 'relative',
+                                overflow: 'visible'
+                            }}
+                        >
+                            {/* Status Bar */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '0px',
+                                left: '0px',
+                                width: '375px',
+                                height: '44px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                paddingLeft: '21px',
+                                paddingRight: '21px',
+                                boxSizing: 'border-box',
+                                background: 'white',
+                                fontSize: '17px',
+                                fontWeight: '600'
+                            }}>
+                                <span style={{color: 'black'}}>{getCurrentTime()}</span>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                    {/* Phone Signal - Fixed direction */}
+                                    <div style={{display: 'flex', gap: '2px', alignItems: 'flex-end'}}>
+                                        <div style={{width: '4px', height: '6px', background: 'black', borderRadius: '1px'}}></div>
+                                        <div style={{width: '4px', height: '8px', background: 'black', borderRadius: '1px'}}></div>
+                                        <div style={{width: '4px', height: '10px', background: 'black', borderRadius: '1px'}}></div>
+                                        <div style={{width: '4px', height: '12px', background: 'black', borderRadius: '1px'}}></div>
+                                    </div>
+                                    {/* WiFi - Fixed to look like iPhone */}
+                                    <svg width="15" height="12" viewBox="0 0 15 12" fill="none">
+                                        <path d="M7.5 0C3.5 0 0 3 0 6.5L1.5 8C1.5 4.5 4.5 2 7.5 2C10.5 2 13.5 4.5 13.5 8L15 6.5C15 3 11.5 0 7.5 0Z" fill="black"/>
+                                        <path d="M7.5 3C5.5 3 3.5 4.5 3.5 7L4.5 8C4.5 6 6 4.5 7.5 4.5C9 4.5 10.5 6 10.5 8L11.5 7C11.5 4.5 9.5 3 7.5 3Z" fill="black"/>
+                                        <path d="M7.5 6C6.5 6 5.5 6.5 5.5 8L6.5 9C6.5 7.5 7 7 7.5 7C8 7 8.5 7.5 8.5 9L9.5 8C9.5 6.5 8.5 6 7.5 6Z" fill="black"/>
+                                        <circle cx="7.5" cy="10" r="1.5" fill="black"/>
+                                    </svg>
+                                    {/* Battery */}
+                                    <div style={{width: '24px', height: '11px', background: 'black', borderRadius: '2px'}}></div>
+                                </div>
+                            </div>
+
+                            {/* Header */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '44px',
+                                left: '0px',
+                                width: '375px',
+                                height: '88px',
+                                background: 'white',
+                                borderBottom: '0.5px solid #C6C6C8'
+                            }}>
+                                {/* Back Button */}
+                                <div style={{
+                                    position: 'absolute',
+                                    left: '20px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    color: '#007AFF',
+                                    fontSize: '17px',
+                                    fontWeight: '400'
+                                }}>
+                                    <svg width="20" height="20" viewBox="0 0 1024 1024" fill="#007AFF" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="#007AFF" strokeWidth="23.552">
+                                        <path d="M669.6 849.6c8.8 8 22.4 7.2 30.4-1.6s7.2-22.4-1.6-30.4l-309.6-280c-8-7.2-8-17.6 0-24.8l309.6-270.4c8.8-8 9.6-21.6 2.4-30.4-8-8.8-21.6-9.6-30.4-2.4L360.8 480.8c-27.2 24-28 64-0.8 88.8l309.6 280z"/>
+                                    </svg>
+                                </div>
+                                
+                                {/* Contact Info - Centered */}
+                                <div style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    top: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontSize: '18px',
+                                        fontWeight: '500',
+                                        marginBottom: '4px'
+                                    }}>
+                                        {contactPhoto ? (
+                                            <img src={contactPhoto} style={{width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover'}} />
+                                        ) : (
+                                            contactName.charAt(0).toUpperCase()
+                                        )}
+                                    </div>
+                                    <div style={{
+                                        fontSize: '16px', 
+                                        fontWeight: '600', 
+                                        color: 'black',
+                                        textAlign: 'center',
+                                        whiteSpace: 'nowrap'
+                                    }}>{contactName}</div>
+                                </div>
+                                
+                                {/* Camera Button */}
+                                <div style={{
+                                    position: 'absolute',
+                                    right: '20px',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    color: '#007AFF',
+                                    fontSize: '22px'
+                                }}>
+                                    <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="#007AFF" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="24" y="64" width="176" height="128" rx="8"/>
+                                        <polyline points="200 112 248 80 248 176 200 144"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {/* iMessage Label */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '132px',
+                                left: '0px',
+                                width: '375px',
+                                height: '44px',
+                                background: 'white',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <div style={{
+                                    color: '#8E8E93', 
+                                    fontSize: '13px', 
+                                    fontWeight: '400',
+                                    lineHeight: '16px',
+                                    textAlign: 'center'
+                                }}>iMessage</div>
+                                <div style={{
+                                    color: '#8E8E93', 
+                                    fontSize: '13px', 
+                                    fontWeight: '400',
+                                    lineHeight: '16px',
+                                    textAlign: 'center',
+                                    marginTop: '1px'
+                                }}>Today {getCurrentTime()}</div>
+                            </div>
+
+                            {/* Content Container - Messages + Input */}
+                            <div 
+                                data-content-container
+                                style={{
+                                    position: 'absolute',
+                                    top: '176px',
+                                    left: '0px',
+                                    width: '375px',
+                                    background: 'white'
+                                }}
+                            >
+                                {/* Messages Container */}
+                                <div 
+                                    data-messages-container 
+                                    style={{
+                                        width: '375px',
+                                        paddingLeft: '16px',
+                                        paddingRight: '16px',
+                                        paddingTop: '8px',
+                                        paddingBottom: '16px',
+                                        boxSizing: 'border-box',
+                                        background: 'white'
+                                    }}
+                                >
+                                    {messages.map((message, index) => (
+                                        <div key={message.id} style={{marginBottom: '12px'}}>
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: message.isUser ? 'flex-end' : 'flex-start',
+                                                marginBottom: '2px'
+                                            }}>
+                                                <div style={{
+                                                    maxWidth: message.type === 'image' ? '200px' : '255px',
+                                                    padding: message.type === 'image' ? '4px' : '10px 14px',
+                                                    borderRadius: message.isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                                                    background: message.isUser ? '#007AFF' : '#E5E5EA',
+                                                    color: message.isUser ? '#FFFFFF' : '#000000',
+                                                    fontSize: '17px',
+                                                    lineHeight: '22px',
+                                                    fontWeight: '400',
+                                                    wordBreak: 'break-word',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'flex-start',
+                                                    minHeight: message.type === 'text' ? '22px' : 'auto'
+                                                }}>
+                                                    {message.type === 'image' ? (
+                                                        <img 
+                                                            src={message.imageUrl} 
+                                                            alt="Message" 
+                                                            style={{
+                                                                maxWidth: '192px',
+                                                                maxHeight: '192px',
+                                                                borderRadius: '12px',
+                                                                display: 'block'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <span style={{
+                                                            display: 'block',
+                                                            width: '100%',
+                                                            textAlign: 'left'
+                                                        }}>
+                                                            {message.text}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {message.isUser && message.status && index === messages.length - 1 && (
+                                                <div style={{
+                                                    display: 'flex', 
+                                                    justifyContent: 'flex-end',
+                                                    paddingRight: '4px'
+                                                }}>
+                                                    <div style={{
+                                                        fontSize: '13px', 
+                                                        color: '#8E8E93',
+                                                        fontWeight: '400'
+                                                    }}>
+                                                        {message.status === 'delivered' ? 'Delivered' : 'Read'}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Input Area - Positioned after messages */}
+                                <div style={{
+                                    paddingLeft: '16px',
+                                    paddingRight: '16px',
+                                    paddingTop: '16px',
+                                    paddingBottom: '16px',
+                                    background: 'white',
+                                    borderTop: '0.5px solid #C6C6C8'
+                                }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px'
+                                    }}>
+                                        {/* Camera Button */}
+                                        <div style={{
+                                            width: '40px',
+                                            height: '36px',
+                                            background: '#F2F2F7',
+                                            borderRadius: '18px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="#8E8E93" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M208,208H48a16,16,0,0,1-16-16V80A16,16,0,0,1,48,64H80L96,40h64l16,24h32a16,16,0,0,1,16,16V192A16,16,0,0,1,208,208Z"/>
+                                                <circle cx="128" cy="132" r="36"/>
+                                            </svg>
+                                        </div>
+                                        
+                                        {/* iMessage Input + Microphone */}
+                                        <div style={{
+                                            flex: '1',
+                                            height: '36px',
+                                            background: '#F2F2F7',
+                                            borderRadius: '18px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            paddingLeft: '16px',
+                                            paddingRight: '16px',
+                                            gap: '12px'
+                                        }}>
+                                            <div style={{
+                                                flex: '1',
+                                                color: '#3C3C43',
+                                                fontSize: '17px',
+                                                opacity: 0.6,
+                                                textAlign: 'left'
+                                            }}>iMessage</div>
+                                            
+                                            <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="#8E8E93" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="88" y="24" width="80" height="144" rx="40"/>
+                                                <line x1="128" y1="200" x2="128" y2="240"/>
+                                                <path d="M200,128a72,72,0,0,1-144,0"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<MessagingApp />);
+    </script>
+</body>
+</html>
