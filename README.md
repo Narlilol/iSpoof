@@ -10,6 +10,8 @@
 
 A fun web application that lets you create realistic iMessage screenshots with customizable contacts, messages, and timestamps. Perfect for creating humorous conversations with friends!
 
+</div>
+
 <div align="center">
 
 | Downloaded IMG | Screenshot |
@@ -20,17 +22,18 @@ A fun web application that lets you create realistic iMessage screenshots with c
 
 ## ⚠️ Important Disclaimer
 
-**This tool is intended for entertainment purposes only.** 
+**This tool is intended for entertainment purposes only.**
 
-- This application should be used to create jokes and have fun with friends
-- Do NOT use this tool for:
-  - Cyberbullying
-  - Scamming
-  - Harassment
-  - Any form of abuse or malicious intent
-- The creator of this application is not responsible for any misuse of this tool
-- Users are solely responsible for how they use this application
-- Any misuse of this tool for harmful purposes is strictly prohibited
+- Use this application to create light-hearted jokes and have fun with friends.
+- **Do NOT use this tool for any harmful or malicious activities, including but not limited to:**
+  - Cyberbullying  
+  - Scamming  
+  - Harassment  
+  - Abuse in any form  
+
+- The creator of this application assumes no responsibility for any misuse.  
+- Users are fully responsible for their actions while using this tool.  
+- Misuse of this application for harmful purposes is strictly prohibited.
 
 ## 🚀 Features
 
@@ -59,10 +62,6 @@ A fun web application that lets you create realistic iMessage screenshots with c
 ## 📝 License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/Saganaki22/iSpoof/issues).
 
 ---
 
