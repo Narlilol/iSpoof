@@ -361,6 +361,7 @@
             font-size: 17px;
             padding: 8px 14px;
             overflow: hidden;
+            position: relative;
         }
         .message-bubble img {
             max-width: 100%;
@@ -368,6 +369,38 @@
             object-fit: cover;
             border-radius: 12px;
             display: block;
+        }
+
+        /* Desktop hover delete button */
+        .message-bubble .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: #ff3b30;
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+            line-height: 1;
+        }
+
+        /* Show delete button on hover for non-touch devices */
+        @media (hover: hover) and (pointer: fine) {
+            .message-bubble:hover .delete-btn {
+                display: flex;
+            }
+        }
+
+        .delete-btn:hover {
+            background: #d70015;
         }
 
         /* Add this to your CSS for the delete animation */
@@ -1015,6 +1048,9 @@
                                         const isDeleting = deletingMessages.includes(message.id);
                                         let longPressFired = false;
                                         const handleTouchStart = () => {
+                                            // Only handle touch on actual touch devices
+                                            if (!('ontouchstart' in window) || window.innerWidth > 768) return;
+                                            
                                             longPressFired = false;
                                             longPressTimeouts.current[message.id] = setTimeout(() => {
                                                 longPressFired = true;
@@ -1023,15 +1059,21 @@
                                             }, 3000);
                                         };
                                         const handleTouchEnd = () => {
+                                            // Only handle touch on actual touch devices
+                                            if (!('ontouchstart' in window) || window.innerWidth > 768) return;
+                                            
                                             clearTimeout(longPressTimeouts.current[message.id]);
-                                            if (!longPressFired) {
+                                            if (!longPressFired && message.type === 'text') {
                                                 startEditing(index, message.text);
                                             }
                                         };
                                         return (
                                             <div key={message.id} className={`fade-in${isDeleting ? ' opacity-0 transition-opacity duration-300' : ''}`}
                                                 onClick={() => {
-                                                    if (!('ontouchstart' in window)) startEditing(index, message.text);
+                                                    // Only handle click editing on non-touch devices for text messages
+                                                    if (!('ontouchstart' in window) && message.type === 'text') {
+                                                        startEditing(index, message.text);
+                                                    }
                                                 }}
                                                 onTouchStart={handleTouchStart}
                                                 onTouchEnd={handleTouchEnd}
@@ -1044,6 +1086,18 @@
                                                         }`}
                                                         style={{ cursor: message.type === 'text' ? 'pointer' : 'default' }}
                                                     >
+                                                        {/* Desktop delete button */}
+                                                        <button
+                                                            className="delete-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                deleteMessage(index);
+                                                            }}
+                                                            title="Delete message"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                        
                                                         {editingIndex === index && message.type === 'text' ? (
                                                             <input
                                                                 type="text"
@@ -1083,7 +1137,9 @@
                                                                 width: '100%',
                                                                 textAlign: 'left',
                                                                 wordBreak: 'break-word',
-                                                                whiteSpace: 'pre-wrap'
+                                                                overflowWrap: 'break-word',
+                                                                whiteSpace: 'pre-wrap',
+                                                                hyphens: 'auto'
                                                             }}>
                                                                 {message.text}
                                                             </span>
@@ -1466,12 +1522,13 @@
                                                     wordBreak: 'break-word',
                                                     wordWrap: 'break-word',
                                                     overflowWrap: 'break-word',
-                                                    overflow: 'hidden',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'flex-start',
+                                                    overflow: 'visible',
+                                                    display: 'block',
+                                                    width: 'fit-content',
                                                     minHeight: message.type === 'text' ? '22px' : 'auto',
-                                                    boxSizing: 'border-box'
+                                                    boxSizing: 'border-box',
+                                                    whiteSpace: 'pre-wrap',
+                                                    hyphens: 'auto'
                                                 }}>
                                                     {message.type === 'image' ? (
                                                         <img 
@@ -1493,7 +1550,8 @@
                                                             wordWrap: 'break-word',
                                                             overflowWrap: 'break-word',
                                                             whiteSpace: 'pre-wrap',
-                                                            overflow: 'hidden'
+                                                            overflow: 'visible',
+                                                            hyphens: 'auto'
                                                         }}>
                                                             {message.text}
                                                         </span>
